@@ -1,119 +1,78 @@
-# Clara Voice Agent Automation Pipeline
+# Clara Onboarding Automation Pipeline
 
-## Overview
+## Executive Summary
 
-This project simulates Clara’s onboarding automation challenge:
+This project simulates Clara’s voice-agent onboarding workflow, transforming unstructured conversations into structured, version-controlled agent configurations.
 
-Demo Call → Structured Account Memo (v1) → Agent Draft  
-Onboarding Update → Patch Engine → Versioned Agent (v2)
+The system processes:
 
-The system converts unstructured human conversation into structured operational rules and deployable AI agent configurations.
+1. **Demo Call Transcript → v1 Account Memo**
+2. **Onboarding Transcript → v2 Account Memo (Patch-Based Update)**
 
-The architecture is designed to be:
+Each version is preserved, and structured diffs are logged to ensure auditability and operational safety.
 
-- Modular  
-- Version-controlled  
-- Idempotent  
-- Batch-capable  
-- Zero-cost and reproducible  
-
-This project is intentionally built to feel like a small internal automation product rather than a one-off script.
+The design emphasizes modularity, idempotency, and deterministic updates.
 
 ---
 
-## 🧠 Architecture
+## System Architecture
 
 ```
-Transcript (Demo)
-        ↓
-Extractor Engine
-        ↓
-Account Memo (v1 JSON)
-        ↓
-Agent Spec Generator
-        ↓
+Demo Transcript
+      ↓
+Extraction Engine
+      ↓
+Structured Account Memo (v1)
+      ↓
+Agent Spec Generation
+      ↓
 Stored under outputs/accounts/<account_id>/v1
 
 Onboarding Transcript
-        ↓
-Patch Extractor
-        ↓
-Versioning Engine
-        ↓
-Account Memo (v2 JSON)
-        ↓
+      ↓
+Update Extraction
+      ↓
+Patch Engine (Dot-Path Updates)
+      ↓
+Account Memo (v2)
+      ↓
+Changelog (Field-Level Diff)
+      ↓
 Agent Spec (v2)
-        ↓
-Changelog (diff log)
 ```
 
 ---
 
-## 🗂 Folder Structure
+## Core Design Principles
 
-```
-dataset/
- ├── demo/
- └── onboarding/
+### 1. Structured Data Modeling
 
-outputs/
- └── accounts/
-     └── <account_id>/
-         ├── v1/
-         │   ├── account_memo.json
-         │   └── agent_spec.json
-         └── v2/
-             ├── account_memo.json
-             ├── agent_spec.json
-             └── changelog.json
+All extracted information is mapped into a predefined JSON schema:
 
-scripts/
- ├── schema.py
- ├── extractor.py
- ├── agent_generator.py
- ├── versioning.py
- ├── pipeline_demo.py
- └── pipeline_onboarding.py
-```
+- Metadata
+- Company Profile
+- Business Hours
+- Emergency Triggers
+- Routing Rules
+- Transfer Protocol
+- Integration Constraints
+- Unknown Fields
+
+This ensures deterministic behavior and avoids free-form interpretation.
 
 ---
 
-## 🧾 Account Memo Design
+### 2. Version-Controlled Evolution
 
-The Account Memo JSON is structured to separate:
+The system distinguishes between:
 
-- Metadata (version, timestamps, source)
-- Company profile
-- Business hours
-- Services & emergency triggers
-- Routing rules
-- Transfer rules
-- Integration constraints
-- Unknown or missing fields
+- **v1 (Exploratory Stage)**  
+  Derived from demo conversations.
 
-No assumptions are made beyond what is explicitly detected.
+- **v2 (Operational Stage)**  
+  Derived from onboarding clarifications.
 
-If information is missing, it is recorded under:
-
-```
-questions_or_unknowns
-```
-
-This ensures no hallucination and preserves operational safety.
-
----
-
-## 🔄 Versioning Strategy
-
-### v1:
-- Generated from demo call transcript.
-- Represents exploratory understanding.
-
-### v2:
-- Generated from onboarding transcript.
-- Applies structured updates using a patch engine.
-- Does NOT overwrite v1.
-- Logs all modifications in `changelog.json`.
+The patch engine applies updates selectively without overwriting previous versions.
 
 Example changelog entry:
 
@@ -125,124 +84,158 @@ Example changelog entry:
 }
 ```
 
-This provides auditability and controlled evolution.
+This provides a transparent audit trail of operational changes.
 
 ---
 
-## ⚙️ Idempotency & Safety
+### 3. Idempotent Execution
 
-The system prevents accidental overwrites:
+The pipeline is designed to be safely repeatable:
 
-- If v1 exists → it is not regenerated.
-- If v2 exists → onboarding update is skipped.
-- Patch engine updates only explicitly changed fields.
+- Existing `v1` will not be regenerated.
+- Existing `v2` will not be overwritten.
+- Only explicitly detected updates are applied.
+- Missing information is logged instead of inferred.
 
-This makes the pipeline repeatable and safe to run in batch mode.
-
----
-
-## 📦 Batch Processing
-
-### Demo transcripts:
-```
-python scripts/pipeline_demo.py
-```
-
-### Onboarding transcripts  
-(Named as `account_<account_id>.txt`):
-```
-python scripts/pipeline_onboarding.py
-```
-
-The onboarding pipeline prints a summary:
-
-- processed
-- success
-- already_exists
-- no_updates
-- missing_v1
-
-This simulates scalable automation across multiple accounts.
+This ensures operational safety and prevents unintended state mutations.
 
 ---
 
-## 🤖 Agent Spec Generation
-
-For each account version:
-
-- Agent name is dynamically generated.
-- Business hours are injected.
-- Transfer protocol is structured.
-- Prompt includes required conversation flows:
-  - Business hours flow
-  - After-hours flow
-  - Transfer and fallback handling
-
-The generated agent spec is compatible with Retell-style configuration JSON.
-
----
-
-## 🧠 Missing Data Strategy
+### 4. Deterministic Extraction (No Hallucination Policy)
 
 The system never fabricates information.
 
-If fields are not explicitly present in transcript:
+If required data is not explicitly present in the transcript, it is:
 
-- They are left blank
-- Or added to `questions_or_unknowns`
+- Left empty, or
+- Added to `questions_or_unknowns`
 
-This prevents unsafe operational assumptions.
-
----
-
-## 🛠 Engineering Decisions
-
-- Modular design (schema, extraction, generation, versioning separated)
-- Dot-path patch logic for nested updates
-- JSON-based storage for reproducibility
-- CLI-based execution
-- Zero paid APIs
-- Fully local execution
+This prevents unsafe assumptions in production scenarios.
 
 ---
 
-## 🔮 Future Improvements (Production Context)
+## Repository Structure
 
-With production access:
+```
+clara-onboarding-automation/
+│
+├── app.py                     # Streamlit dashboard wrapper
+├── README.md
+├── requirements.txt
+│
+├── dataset/
+│   ├── demo/                  # Demo transcripts
+│   └── onboarding/            # Onboarding transcripts
+│
+├── outputs/
+│   └── accounts/
+│       └── <account_id>/
+│           ├── v1/
+│           │   ├── account_memo.json
+│           │   └── agent_spec.json
+│           └── v2/
+│               ├── account_memo.json
+│               ├── agent_spec.json
+│               └── changelog.json
+│
+└── scripts/
+    ├── schema.py              # Account schema definition
+    ├── extractor.py           # Demo transcript extraction
+    ├── versioning.py          # Patch engine & diff logic
+    ├── agent_generator.py     # Agent configuration builder
+    ├── pipeline_demo.py       # v1 generation pipeline
+    └── pipeline_onboarding.py # v2 update pipeline
+```
+
+---
+
+## Processing Flow
+
+### Demo Stage (v1)
+
+```
+python -m scripts.pipeline_demo
+```
+
+- Extracts structured data from demo transcripts.
+- Generates v1 account memo.
+- Produces initial agent specification.
+
+---
+
+### Onboarding Stage (v2)
+
+```
+python -m scripts.pipeline_onboarding <account_id> <transcript_path>
+```
+
+- Extracts operational updates.
+- Applies structured dot-path patch updates.
+- Generates v2 account memo.
+- Produces changelog with field-level diffs.
+
+Batch mode is also supported for scalable processing.
+
+---
+
+## Agent Specification Generation
+
+For each account version, the system produces:
+
+- Structured agent metadata
+- Business-hour logic
+- After-hours routing logic
+- Transfer timeout rules
+- Retry protocol
+
+The generated JSON structure is compatible with Retell-style agent configurations.
+
+---
+
+## Streamlit Dashboard
+
+A lightweight dashboard (`app.py`) enables:
+
+- Uploading demo transcripts
+- Uploading onboarding transcripts
+- Viewing v1 and v2 outputs
+- Inspecting structured changelogs
+
+This provides a visual interface over the underlying automation engine without modifying backend logic.
+
+---
+
+## Engineering Tradeoffs
+
+- Regex-based extraction is used for deterministic control.
+- JSON storage ensures reproducibility.
+- No external paid APIs are used.
+- The system is fully executable locally.
+
+---
+
+## Production Extension Path
+
+With production infrastructure, this system could be extended to:
 
 - Replace regex extraction with structured LLM extraction layer
-- Add database persistence (PostgreSQL/Supabase)
-- Add diff viewer UI
-- Integrate directly with Retell APIs
-- Add retry logic + structured logging
+- Persist account state in a database (e.g., PostgreSQL)
+- Integrate directly with Retell API
+- Add structured logging and monitoring
+- Provide a diff visualization UI
 
 ---
 
-## 🎥 Demo Flow
+## Conclusion
 
-1. Show demo transcript → v1 generation  
-2. Show onboarding transcript → v2 generation  
-3. Open changelog  
-4. Explain version evolution  
+This project models Clara’s onboarding process as a version-controlled automation system rather than a one-off transformation script.
 
----
-
-## 🎯 Design Philosophy
-
-This project treats onboarding automation as a version-controlled system rather than a one-off transformation.
-
-It emphasizes:
+It prioritizes:
 
 - Structured data modeling
 - Controlled updates
 - Operational safety
+- Auditability
 - Reproducibility
-- Clean system boundaries
 
----
-
-## 🚀 Result
-
-This pipeline simulates Clara’s real-world onboarding automation:
-
-Messy conversation → structured operational rules → deployable AI agent spec.
+The result is a deterministic, modular onboarding automation pipeline suitable for internal deployment.
