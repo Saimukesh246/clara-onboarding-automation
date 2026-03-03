@@ -1,0 +1,11 @@
+During onboarding, the client clarified the following:
+
+The business is now open 24/7.
+
+Emergency calls must always be transferred immediately.
+
+If transfer fails after 60 seconds, retry twice.
+
+If still no response, notify dispatch team.
+
+Timezone remains EST.

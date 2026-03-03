@@ -1,0 +1,46 @@
+{
+    "meta": {
+        "account_id": "40b35f2b-943e-43b6-ba65-8a66eb559dfe",
+        "version": "v1",
+        "created_at": "2026-03-03T16:44:35.097867",
+        "source": "demo_call"
+    },
+    "company_profile": {
+        "company_name": "Abc Fire Protection",
+        "office_address": "",
+        "timezone": ""
+    },
+    "business_hours": {
+        "days": [],
+        "start_time": "8am",
+        "end_time": "5pm"
+    },
+    "services": {
+        "supported": [],
+        "emergency_triggers": [
+            "Sprinkler issue",
+            "Fire alarm trigger"
+        ]
+    },
+    "routing": {
+        "emergency": {
+            "transfer_targets": [],
+            "fallback_action": ""
+        },
+        "non_emergency": {
+            "routing_logic": ""
+        }
+    },
+    "call_transfer_rules": {
+        "timeout_seconds": "",
+        "retry_count": "",
+        "failure_message": ""
+    },
+    "integration_constraints": [],
+    "flow_summaries": {
+        "office_hours": "",
+        "after_hours": ""
+    },
+    "questions_or_unknowns": [],
+    "notes": ""
+}

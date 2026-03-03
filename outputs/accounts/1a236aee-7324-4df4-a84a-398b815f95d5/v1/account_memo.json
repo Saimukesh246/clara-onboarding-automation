@@ -1,0 +1,53 @@
+{
+    "meta": {
+        "account_id": "1a236aee-7324-4df4-a84a-398b815f95d5",
+        "version": "v1",
+        "created_at": "2026-03-03T17:17:26.221068",
+        "source": "demo_call"
+    },
+    "company_profile": {
+        "company_name": "Abc Fire Protection Services",
+        "office_address": "",
+        "timezone": "EST"
+    },
+    "business_hours": {
+        "days": [
+            "Mon",
+            "Tue",
+            "Wed",
+            "Thu",
+            "Fri"
+        ],
+        "start_time": "8am",
+        "end_time": "5pm"
+    },
+    "services": {
+        "supported": [],
+        "emergency_triggers": [
+            "Sprinkler",
+            "Fire Alarm",
+            "Gas Leak"
+        ]
+    },
+    "routing": {
+        "emergency": {
+            "transfer_targets": [],
+            "fallback_action": ""
+        },
+        "non_emergency": {
+            "routing_logic": ""
+        }
+    },
+    "call_transfer_rules": {
+        "timeout_seconds": "",
+        "retry_count": "",
+        "failure_message": ""
+    },
+    "integration_constraints": [],
+    "flow_summaries": {
+        "office_hours": "",
+        "after_hours": ""
+    },
+    "questions_or_unknowns": [],
+    "notes": ""
+}

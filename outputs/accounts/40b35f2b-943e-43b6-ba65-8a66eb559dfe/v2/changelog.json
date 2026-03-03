@@ -1,0 +1,32 @@
+{
+    "from_version": "v1",
+    "to_version": "v2",
+    "updated_at": "2026-03-03T17:19:07.980593",
+    "changes": [
+        {
+            "field": "business_hours.start_time",
+            "previous": "8am",
+            "updated": "00:00"
+        },
+        {
+            "field": "business_hours.end_time",
+            "previous": "5pm",
+            "updated": "23:59"
+        },
+        {
+            "field": "call_transfer_rules.timeout_seconds",
+            "previous": "",
+            "updated": "60"
+        },
+        {
+            "field": "call_transfer_rules.retry_count",
+            "previous": "",
+            "updated": "2"
+        },
+        {
+            "field": "company_profile.timezone",
+            "previous": "",
+            "updated": "EST"
+        }
+    ]
+}
